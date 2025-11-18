@@ -3,34 +3,34 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { prompt } = req.body;
+  let body = "";
+  req.on("data", chunk => {
+    body += chunk;
+  });
 
-  if (!prompt) {
-    return res.status(400).json({ error: "Missing prompt" });
-  }
+  req.on("end", async () => {
+    try {
+      const { prompt } = JSON.parse(body);
+      if (!prompt) {
+        return res.status(400).json({ error: "Missing prompt" });
+      }
 
-  try {
-    const openaiRes = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        messages: [{ role: "user", content: prompt }],
-      }),
-    });
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-3.5-turbo",
+          messages: [{ role: "user", content: prompt }],
+        }),
+      });
 
-    const data = await openaiRes.json();
-
-    if (!data.choices || !data.choices[0]) {
-      return res.status(500).json({ error: "Invalid response from OpenAI" });
+      const data = await response.json();
+      res.status(200).json({ reply: data.choices[0].message.content });
+    } catch (err) {
+      res.status(500).json({ error: "Server error: " + err.message });
     }
-
-    res.status(200).json({ reply: data.choices[0].message.content });
-  } catch (err) {
-    res.status(500).json({ error: "Server error: " + err.message });
-  }
+  });
 }
-
