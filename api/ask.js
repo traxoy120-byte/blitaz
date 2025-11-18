@@ -16,24 +16,19 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo", // make sure this is valid
+        model: "gpt-3.5-turbo",
         messages: [{ role: "user", content: prompt }],
       }),
     });
 
     const data = await openaiRes.json();
 
-    // If OpenAI returns an error, surface it clearly
     if (data.error) {
       return res.status(500).json({ error: data.error.message });
     }
 
-    // If no choices, return the raw data for inspection
-    if (!data.choices || !data.choices[0]) {
-      return res.status(500).json({ error: "Unexpected response", raw: data });
-    }
-
-    res.status(200).json({ reply: data.choices[0].message.content });
+    const reply = data.choices?.[0]?.message?.content;
+    res.status(200).json({ reply: reply || "No reply from OpenAI" });
   } catch (err) {
     res.status(500).json({ error: "Server error: " + err.message });
   }
