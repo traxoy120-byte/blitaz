@@ -51,7 +51,11 @@
         });
 
         const data = await res.json();
-        responseBox.textContent = data.reply || "No response received.";
+if (res.ok) {
+  responseBox.textContent = data.reply;
+} else {
+  responseBox.textContent = "⚠️ Error: " + (data.error || "Unknown server error");
+}
       } catch (err) {
         responseBox.textContent = "Error: " + err.message;
       }
