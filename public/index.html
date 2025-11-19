@@ -1,31 +1,73 @@
-<script>
-  async function ask() {
-    const prompt = document.getElementById("prompt").value;
-    const responseBox = document.getElementById("response");
-
-    if (!prompt) {
-      responseBox.textContent = "Please enter a prompt.";
-      return;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blitz AI</title>
+  <style>
+    body {
+      font-family: Montserrat, sans-serif;
+      background: radial-gradient(circle at top left, #1e1e2f, #0d0d1a);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
     }
+    input, button {
+      font-family: inherit;
+      font-size: 1rem;
+      padding: 0.5rem;
+      margin: 0.5rem;
+      border-radius: 5px;
+      border: none;
+    }
+    #response {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      max-width: 600px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>Blitz AI</h1>
+  <input type="text" id="prompt" placeholder="Ask Blitz AI..." />
+  <button onclick="ask()">Send</button>
+  <div id="response">Your response will appear here.</div>
 
-    responseBox.textContent = "Thinking...";
+  <script>
+    async function ask() {
+      const prompt = document.getElementById("prompt").value;
+      const responseBox = document.getElementById("response");
 
-    try {
-      const res = await fetch("/api/ask", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt })
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        responseBox.textContent = data.reply;
-      } else {
-        responseBox.textContent = `⚠️ Blitz AI error: ${data.error || "Unknown server error"}`;
+      if (!prompt) {
+        responseBox.textContent = "Please enter a prompt.";
+        return;
       }
-    } catch (err) {
-      responseBox.textContent = `⚠️ Network error: ${err.message}`;
+
+      responseBox.textContent = "Thinking...";
+
+      try {
+        const res = await fetch("/api/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          responseBox.textContent = data.reply;
+        } else {
+          responseBox.textContent = `⚠️ Blitz AI error: ${data.error || "Unknown server error"}`;
+        }
+      } catch (err) {
+        responseBox.textContent = `⚠️ Network error: ${err.message}`;
+      }
     }
-  }
-</script>
+  </script>
+</body>
+</html>
